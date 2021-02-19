@@ -1,0 +1,48 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Pull From Upstream
+
+# Controls when the action will run. 
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: master
+          fetch-depth: 0
+        
+      - name: Setup Git Config
+        run: |
+          git config user.name "Github Actions Bot"
+          git config user.email "<>"
+      
+      - name: Create Upstream Tracking Branch
+        run: |
+          git checkout -b upstream-dockerman origin/upstream-dockerman
+      
+      - name: Remote Add
+        run: |
+          git remote add upstream https://github.com/limetech/webgui.git
+          git fetch upstream
+          git checkout -b upstream-master upstream/master
+          git pull
+      
+      - name: Subtree Split
+        run: |
+          git subtree split --prefix=plugins/dynamix.docker.manager --onto upstream-dockerman -b upstream-dockerman
+      
+      - name: Update upstream-dockerman
+        run: |
+          git push origin upstream-dockerman
